@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+    <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz: Mitos y Leyendas</title>
@@ -266,7 +268,14 @@
                 <h3>Top 5 Mejores Tiempos</h3>
                 <ul id="leaderboard-list" class="leaderboard-list"></ul>
             </div>
+<!-- Bloque del QR -->
+            <div style="margin-top: 20px; text-align: center;">
+                <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 8px;">¡Escanea este QR para compartir el quiz!</p>
+                <div id="qrcode" style="display: flex; justify-content: center;"></div>
+            </div>
 
+            <button class="btn" style="margin-top: 16px;" onclick="resetQuiz()">Jugar de nuevo</button>
+        </div>
             <button class="btn" style="margin-top: 16px;" onclick="resetQuiz()">Jugar de nuevo</button>
         </div>
     </div>
@@ -403,6 +412,12 @@
 
             saveScoreToLeaderboard(playerName, score, secondsElapsed);
             renderLeaderboard();
+            // Pega aquí la línea para generar el QR:
+            document.getElementById("qrcode").innerHTML = ""; // Limpia QRs previos si vuelven a jugar
+            new QRCode(document.getElementById("qrcode"), {
+                text: window.location.href,
+                width: 140,
+                height: 140
         }
 
         function saveScoreToLeaderboard(name, sc, time) {
