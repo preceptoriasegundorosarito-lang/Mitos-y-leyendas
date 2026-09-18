@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz: Mitos y Leyendas</title>
+    <!-- Librería para el código QR -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --primary: #1e1b4b;
+            --accent: #7c3aed;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --success: #22c55e;
+            --error: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 16px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            overflow: hidden;
+        }
+
+        h1 {
+            font-size: 1.3rem;
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 0.85rem;
+            color: #64748b;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Pantallas */
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* Formulario de Inicio */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--primary);
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent);
+        }
+
+        .btn {
+            width: 100%;
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: #6d28d9;
+        }
+
+        /* Cabecera del Quiz */
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #64748b;
+            background: #f1f5f9;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        /* Preguntas y Opciones */
+        .question-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 16px;
+            line-height: 1.4;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            padding: 12px 14px;
+            border-radius: 12px;
+            font-size: 0.92rem;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+        }
+
+        .option:hover:not(:disabled) {
+            border-color: var(--accent);
+            background: #f5f3ff;
+        }
+
+        .option.correct {
+            background: #dcfce7 !important;
+            border-color: var(--success) !important;
+            color: #166534;
+            font-weight: 600;
+        }
+
+        .option.incorrect {
+            background: #fee2e2 !important;
+            border-color: var(--error) !important;
+            color: #991b1b;
+        }
+
+        /* Resultados y Ranking */
+        .results-card {
+            text-align: center;
+        }
+
+        .score-box {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .time-box {
+            font-size: 0.95rem;
+            color: #64748b;
+            margin-bottom: 16px;
+        }
+
+        .motivation {
+            font-size: 0.9rem;
+            color: var(--accent);
+            background: #f5f3ff;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .leaderboard {
+            margin-top: 16px;
+            text-align: left;
+        }
+
+        .leaderboard h3 {
+            font-size: 0.95rem;
+            color: var(--primary);
+            margin-bottom: 8px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 4px;
+        }
+
+        .leaderboard-list {
+            list-style: none;
+            max-height: 140px;
+            overflow-y: auto;
+        }
+
+        .leaderboard-list li {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            padding: 6px 8px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .leaderboard-list li:nth-child(odd) {
+            background: #fafaf9;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- PASO 1: Ingreso de Nombre -->
+        <div id="screen-start" class="screen active">
+            <h1>Quiz: Mitos y Leyendas</h1>
+            <p class="subtitle">Desafía tus conocimientos sobre el folklore</p>
+            
+            <div class="form-group">
+                <label for="username">Ingresá tu nombre:</label>
+                <input type="text" id="username" placeholder="Ej. Sofía Pérez" autocomplete="off">
+            </div>
+            
+            <button class="btn" onclick="startQuiz()">Comenzar Quiz</button>
+        </div>
+
+        <!-- PASO 2: Preguntas -->
+        <div id="screen-quiz" class="screen">
+            <div class="quiz-header">
+                <span id="question-counter">Pregunta 1 de 4</span>
+                <span id="timer">0s</span>
+            </div>
+            
+            <div id="question-container">
+                <h2 id="question-title" class="question-title"></h2>
+                <div id="options-container" class="options"></div>
+            </div>
+        </div>
+
+        <!-- PASO 3: Resultados y Top 5 -->
+        <div id="screen-results" class="screen results-card">
+            <h1>¡Resultado Final!</h1>
+            <div id="final-score" class="score-box"></div>
+            <div id="final-time" class="time-box"></div>
+            <div id="motivation-text" class="motivation"></div>
+
+            <div class="leaderboard">
+                <h3>Top 5 Mejores Tiempos</h3>
+                <ul id="leaderboard-list" class="leaderboard-list"></ul>
+            </div>
+
+            <!-- Bloque del QR -->
+            <div style="margin-top: 20px; text-align: center;">
+                <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 8px;">¡Escanea este QR para compartir el quiz!</p>
+                <div id="qrcode" style="display: flex; justify-content: center;"></div>
+            </div>
+
+            <button class="btn" style="margin-top: 16px;" onclick="resetQuiz()">Jugar de nuevo</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                title: "¿Qué función cumplía el miedo en la historia del Lobizón?",
+                options: [
+                    "Se limitaba a generar precaución frente a posibles amenazas físicas.",
+                    "Carecía de influencia en las relaciones familiares y en las normas morales.",
+                    "Regulaba jerarquías dentro de la comunidad, la familia y la moral del grupo."
+                ],
+                correct: 2
+            },
+            {
+                title: "Según la creencia de la Luz Mala, ¿qué se debía evitar?",
+                options: [
+                    "Acercarse a lo desconocido, especialmente durante la noche.",
+                    "Explorar lugares desconocidos durante la noche.",
+                    "Considerar que lo desconocido no representaba ninguna amenaza."
+                ],
+                correct: 0
+            },
+            {
+                title: "¿Qué función tenía el miedo en la Salamanca?",
+                options: [
+                    "Cumplía exclusivamente una función de protección frente a peligros físicos.",
+                    "También ordenaba la convivencia, además de proteger frente al peligro físico.",
+                    "No tenía ninguna incidencia en las normas de convivencia."
+                ],
+                correct: 1
+            },
+            {
+                title: "¿Cómo funcionaba el miedo en el relato del Cuco?",
+                options: [
+                    "Dependía principalmente de la aplicación de castigos físicos.",
+                    "Requería explicaciones extensas para resultar efectivo.",
+                    "También educaba sin necesidad de castigos físicos ni largas explicaciones."
+                ],
+                correct: 2
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let playerName = "";
+        let startTime = 0;
+        let timerInterval = null;
+        let secondsElapsed = 0;
+
+        function startQuiz() {
+            const input = document.getElementById("username");
+            playerName = input.value.trim();
+
+            if (!playerName) {
+                alert("Por favor, ingresa tu nombre para comenzar.");
+                input.focus();
+                return;
+            }
+
+            document.getElementById("screen-start").classList.remove("active");
+            document.getElementById("screen-quiz").classList.add("active");
+
+            startTime = Date.now();
+            timerInterval = setInterval(() => {
+                secondsElapsed = Math.floor((Date.now() - startTime) / 1000);
+                document.getElementById("timer").innerText = `${secondsElapsed}s`;
+            }, 1000);
+
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const q = questions[currentQuestionIndex];
+            document.getElementById("question-counter").innerText = `Pregunta ${currentQuestionIndex + 1} de ${questions.length}`;
+            document.getElementById("question-title").innerText = q.title;
+
+            const optionsContainer = document.getElementById("options-container");
+            optionsContainer.innerHTML = "";
+
+            q.options.forEach((optText, index) => {
+                const btn = document.createElement("button");
+                btn.className = "option";
+                const letter = String.fromCharCode(65 + index);
+                btn.innerText = `${letter}) ${optText}`;
+                btn.onclick = () => selectOption(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function selectOption(selectedIndex, selectedBtn) {
+            const q = questions[currentQuestionIndex];
+            const allButtons = document.querySelectorAll(".option");
+
+            allButtons.forEach(b => b.disabled = true);
+
+            if (selectedIndex === q.correct) {
+                selectedBtn.classList.add("correct");
+                score++;
+            } else {
+                selectedBtn.classList.add("incorrect");
+                allButtons[q.correct].classList.add("correct");
+            }
+
+            setTimeout(() => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < questions.length) {
+                    loadQuestion();
+                } else {
+                    finishQuiz();
+                }
+            }, 950);
+        }
+
+        function finishQuiz() {
+            clearInterval(timerInterval);
+
+            document.getElementById("screen-quiz").classList.remove("active");
+            document.getElementById("screen-results").classList.add("active");
+
+            document.getElementById("final-score").innerText = `${playerName}, tuviste ${score} de ${questions.length} respuestas correctas.`;
+            document.getElementById("final-time").innerText = `Tiempo empleado: ${secondsElapsed} segundos`;
+
+            let msg = "";
+            if (score === 4) {
+                msg = "¡Excelente! Sos un verdadero experto en mitos y leyendas.";
+            } else if (score >= 2) {
+                msg = "¡Muy bien! Tenés una gran base, seguí explorando nuestras historias.";
+            } else {
+                msg = "¡A seguir practicando! Las leyendas populares tienen mucho para enseñarnos.";
+            }
+            document.getElementById("motivation-text").innerText = msg;
+
+            saveScoreToLeaderboard(playerName, score, secondsElapsed);
+            renderLeaderboard();
+
+            // Generador del código QR corregido
+            document.getElementById("qrcode").innerHTML = "";
+            new QRCode(document.getElementById("qrcode"), {
+                text: window.location.href,
+                width: 140,
+                height: 140
+            });
+        }
+
+        function saveScoreToLeaderboard(name, sc, time) {
+            let leaderboard = JSON.parse(localStorage.getItem("quiz_mitos_leaderboard")) || [];
+            leaderboard.push({ name, score: sc, time });
+
+            leaderboard.sort((a, b) => {
+                if (b.score !== a.score) return b.score - a.score;
+                return a.time - b.time;
+            });
+
+            leaderboard = leaderboard.slice(0, 5);
+            localStorage.setItem("quiz_mitos_leaderboard", JSON.stringify(leaderboard));
+        }
+
+        function renderLeaderboard() {
+            const list = document.getElementById("leaderboard-list");
+            list.innerHTML = "";
+            let leaderboard = JSON.parse(localStorage.getItem("quiz_mitos_leaderboard")) || [];
+
+            if (leaderboard.length === 0) {
+                list.innerHTML = "<li><span style='width:100%; text-align:center;'>Aún no hay registros</span></li>";
+                return;
+            }
+
+            leaderboard.forEach((item, index) => {
+                const li = document.createElement("li");
+                li.innerHTML = `<span><strong>#${index + 1}</strong> ${item.name} (${item.score}/4)</span> <span><strong>${item.time}s</strong></span>`;
+                list.appendChild(li);
+            });
+        }
+
+        function resetQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            secondsElapsed = 0;
+            document.getElementById("username").value = "";
+            document.getElementById("screen-results").classList.remove("active");
+            document.getElementById("screen-start").classList.add("active");
+        }
+    </script>
+</body>
+</html>
